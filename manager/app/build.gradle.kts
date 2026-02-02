@@ -33,7 +33,7 @@ val baseCFlags = listOf(
 val baseCppFlags = baseCFlags + "-fno-rtti"
 
 android {
-    namespace = "me.weishu.kernelsu"
+    namespace = "m0.wEisHu.Kerne1su"
 
     buildTypes {
         debug {
@@ -119,7 +119,8 @@ android {
         }
 
         ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
+            //noinspection ChromeOsAbiSupport
+            abiFilters += listOf("arm64-v8a")
         }
     }
 

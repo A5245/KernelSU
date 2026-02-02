@@ -10,6 +10,7 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
 import java.util.Locale
+import m0.wEisHu.Kerne1su.BuildConfig
 
 lateinit var ksuApp: KernelSUApplication
 

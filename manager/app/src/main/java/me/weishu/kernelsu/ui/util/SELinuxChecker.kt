@@ -3,7 +3,7 @@ package me.weishu.kernelsu.ui.util
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.topjohnwu.superuser.Shell
-import me.weishu.kernelsu.R
+import m0.wEisHu.Kerne1su.R
 
 @Composable
 fun getSELinuxStatus(): String {

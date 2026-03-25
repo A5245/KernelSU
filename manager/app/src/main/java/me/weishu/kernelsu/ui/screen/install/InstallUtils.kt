@@ -7,7 +7,7 @@ import android.provider.OpenableColumns
 import androidx.annotation.StringRes
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
-import me.weishu.kernelsu.R
+import m0.wEisHu.Kerne1su.R
 
 @Parcelize
 internal sealed class InstallMethod : Parcelable {

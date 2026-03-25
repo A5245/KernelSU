@@ -39,7 +39,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import me.weishu.kernelsu.R
+import m0.wEisHu.Kerne1su.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 
 @OptIn(ExperimentalMaterial3Api::class)

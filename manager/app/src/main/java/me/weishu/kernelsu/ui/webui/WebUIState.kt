@@ -10,7 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.topjohnwu.superuser.Shell
-import me.weishu.kernelsu.R
+import m0.wEisHu.Kerne1su.R
 
 sealed class WebUIEvent {
     data object Loading : WebUIEvent()

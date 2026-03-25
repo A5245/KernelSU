@@ -91,7 +91,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.R
+import m0.wEisHu.Kerne1su.R
 import me.weishu.kernelsu.data.model.RepoModule
 import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle

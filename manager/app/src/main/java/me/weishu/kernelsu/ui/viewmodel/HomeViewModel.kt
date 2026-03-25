@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.weishu.kernelsu.BuildConfig
+import m0.wEisHu.Kerne1su.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ksuApp

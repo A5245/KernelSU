@@ -57,7 +57,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import me.weishu.kernelsu.R
+import m0.wEisHu.Kerne1su.R
 import me.weishu.kernelsu.data.model.TemplateInfo
 import me.weishu.kernelsu.ui.component.material.SegmentedLazyColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem

@@ -27,7 +27,7 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ui.util.defaultHazeEffect
-import me.weishu.kernelsu.R
+import m0.wEisHu.Kerne1su.R
 import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.component.FloatingBottomBar
 import me.weishu.kernelsu.ui.component.FloatingBottomBarItem

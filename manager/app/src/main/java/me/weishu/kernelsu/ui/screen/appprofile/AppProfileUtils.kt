@@ -3,7 +3,7 @@ package me.weishu.kernelsu.ui.screen.appprofile
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import me.weishu.kernelsu.R
+import m0.wEisHu.Kerne1su.R
 
 enum class Mode(@field:StringRes private val res: Int) {
     Default(R.string.profile_default),

@@ -14,7 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import me.weishu.kernelsu.R
+import m0.wEisHu.Kerne1su.R
 
 @Composable
 fun HandleWebUIEventMaterial(

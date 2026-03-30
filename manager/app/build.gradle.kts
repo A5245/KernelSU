@@ -34,6 +34,7 @@ val baseCppFlags = baseCFlags + "-fno-rtti"
 
 android {
     namespace = "m0.wEisHu.Kerne1su"
+    val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
 
     buildTypes {
         debug {
@@ -47,6 +48,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             vcsInfo.include = false
+            if (isPrBuild) applicationIdSuffix = ".dev"
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             externalNativeBuild {
                 cmake {
@@ -113,7 +115,6 @@ android {
         versionCode = managerVersionCode
         versionName = managerVersionName
 
-        val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
         buildConfigField("boolean", "IS_PR_BUILD", isPrBuild.toString())
 
         externalNativeBuild {
@@ -125,8 +126,7 @@ android {
         }
 
         ndk {
-            //noinspection ChromeOsAbiSupport
-            abiFilters += listOf("arm64-v8a")
+            abiFilters += listOf("arm64-v8a", "x86_64")
         }
     }
 
@@ -201,4 +201,6 @@ dependencies {
     implementation(libs.haze)
 
     implementation(libs.material.kolor)
+
+    implementation(libs.appiconloader)
 }

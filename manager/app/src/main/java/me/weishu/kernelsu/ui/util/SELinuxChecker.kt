@@ -1,9 +1,6 @@
 package me.weishu.kernelsu.ui.util
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import com.topjohnwu.superuser.Shell
-import m0.wEisHu.Kerne1su.R
 
 fun isSELinuxPermissive(): Boolean {
     val shell = Shell.Builder.create().build("sh")

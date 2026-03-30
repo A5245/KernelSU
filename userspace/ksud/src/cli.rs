@@ -6,7 +6,9 @@ use android_logger::Config;
 use log::{LevelFilter, error, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
-use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
+use crate::{
+    apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, sulog, utils,
+};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -30,6 +32,9 @@ enum Commands {
     /// Trigger `service` event
     Services,
 
+    /// Run sulog reader daemon
+    Sulogd,
+
     /// Trigger `boot-complete` event
     BootCompleted,
 
@@ -42,6 +47,10 @@ enum Commands {
         /// Restore adb properties after magica late-load
         #[arg(long)]
         post_magica: bool,
+
+        /// manager package name
+        #[arg(long, default_value_t = String::from("me.weishu.kernelsu"))]
+        package_name: String,
     },
 
     /// Emulate system reboot
@@ -61,6 +70,9 @@ enum Commands {
         /// magiskboot path, if not specified, will search from $PATH
         #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
+
+        #[arg(long, default_value_t = String::from("me.weishu.kernelsu"))]
+        package_name: String,
     },
 
     /// SELinux policy Patch tool
@@ -173,6 +185,12 @@ enum Debug {
         path: PathBuf,
     },
 
+    /// Load a kernel module from disk
+    Insmod {
+        /// kernel module path
+        module: PathBuf,
+    },
+
     /// Process mark management
     Mark {
         #[command(subcommand)]
@@ -271,6 +289,9 @@ enum Module {
 
     /// manage module configuration
     Config {
+        /// target internal module name (resolved as internal.<name>)
+        #[arg(long)]
+        internal: Option<String>,
         #[command(subcommand)]
         command: ModuleConfigCmd,
     },
@@ -469,11 +490,16 @@ pub fn run() -> Result<()> {
                 Module::Disable { id } => module::disable_module(&id),
                 Module::Action { id } => module::run_action(&id),
                 Module::List => module::list_modules(),
-                Module::Config { command } => {
-                    // Get module ID from environment variable
-                    let module_id = std::env::var("KSU_MODULE").map_err(|_| {
-                        anyhow::anyhow!("This command must be run in the context of a module")
-                    })?;
+                Module::Config { internal, command } => {
+                    let module_id = match internal {
+                        Some(internal_name) => format!("internal.{internal_name}"),
+                        None => std::env::var("KSU_MODULE").map_err(|_| {
+                            anyhow::anyhow!(
+                                "This command must be run in the context of a module or passed --internal <name>"
+                            )
+                        })?,
+                    };
+                    crate::module::validate_module_id(&module_id)?;
 
                     match command {
                         ModuleConfigCmd::Get { key } => {
@@ -558,7 +584,10 @@ pub fn run() -> Result<()> {
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),
         Commands::Unload => crate::unload::unload(),
-        Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
+        Commands::Uninstall {
+            magiskboot,
+            package_name,
+        } => utils::uninstall(magiskboot, &package_name),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
@@ -567,14 +596,15 @@ pub fn run() -> Result<()> {
         Commands::LateLoad {
             magica,
             post_magica,
+            package_name,
         } => {
             if let Some(port) = magica {
-                return crate::magica::run(port).map_err(|e| {
+                return crate::magica::run(port, &package_name).map_err(|e| {
                     error!("Error running magica: {e}");
                     e
                 });
             }
-            let result = crate::late_load::run();
+            let result = crate::late_load::run(&package_name);
             if post_magica {
                 info!("Restoring adb properties (post-magica cleanup)...");
                 if let Err(e) = crate::magica::disable_adb_root() {
@@ -588,9 +618,13 @@ pub fn run() -> Result<()> {
                 info!("KernelSU not available, exiting services");
                 std::process::exit(0);
             }
+            if let Err(err) = sulog::ensure_sulogd_running() {
+                error!("failed to ensure sulogd is running: {err:#}");
+            }
             init_event::on_services();
             Ok(())
         }
+        Commands::Sulogd => sulog::run_sulogd(),
         Commands::Profile { command } => match command {
             Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
             Profile::SetSepolicy { package, policy } => {
@@ -637,6 +671,7 @@ pub fn run() -> Result<()> {
                 let data = assets::get_asset_data(&name)?;
                 utils::ensure_binary(&path, &data, false)
             }
+            Debug::Insmod { module } => debug::insmod(&module),
             Debug::Mark { command } => match command {
                 MarkCommand::Get { pid } => debug::mark_get(pid),
                 MarkCommand::Mark { pid } => debug::mark_set(pid),

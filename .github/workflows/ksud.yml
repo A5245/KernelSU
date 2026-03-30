@@ -22,7 +22,7 @@ jobs:
         fetch-depth: 0
 
     - name: Download artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
     
     - name: Prepare LKM files
       if: ${{ inputs.pack_lkm }}
@@ -53,11 +53,11 @@ jobs:
       env:
         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       run: |
-        source .github/scripts/setup-ksu-build.sh ${{ inputs.target }} 26
+        source .github/scripts/setup-rust-build.sh ${{ inputs.target }} 26
         cargo build --target $TRIPLE --release --manifest-path ./userspace/ksud/Cargo.toml
 
     - name: Upload ksud artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: ksud-${{ inputs.target }}
-        path: userspace/ksud/target/**/release/ksud*
+        path: target/${{ inputs.target }}/release/ksud

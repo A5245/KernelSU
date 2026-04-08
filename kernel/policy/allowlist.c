@@ -54,7 +54,7 @@ static void remove_uid_from_arr(uid_t uid)
     }
 }
 
-static void init_default_profiles()
+static void __init init_default_profiles()
 {
     kernel_cap_t full_cap = CAP_FULL_SET;
 
@@ -131,6 +131,18 @@ static bool profile_valid(struct app_profile *profile)
         return false;
     }
 
+    bool need_migrate_su_domain = false;
+
+    if (unlikely(profile->version == 2)) {
+        profile->version = KSU_APP_PROFILE_VER;
+        need_migrate_su_domain = true;
+    }
+
+    if (strnlen(profile->key, sizeof(profile->key)) >= sizeof(profile->key)) {
+        pr_err("invalid app_profile key\n");
+        return false;
+    }
+
     if (profile->version < KSU_APP_PROFILE_VER) {
         pr_info("Unsupported profile version: %d\n", profile->version);
         return false;
@@ -138,15 +150,23 @@ static bool profile_valid(struct app_profile *profile)
 
     if (profile->allow_su) {
 #ifndef CONFIG_KSU_DISABLE_POLICY
-        if (profile->rp_config.use_default) {
-            return true;
-        }
-
         if (profile->rp_config.profile.groups_count > KSU_MAX_GROUPS) {
+            pr_err("invalid groups_count in app_profile: %s\n", profile->key);
             return false;
         }
 
-        if (strlen(profile->rp_config.profile.selinux_domain) == 0) {
+        char *domain = profile->rp_config.profile.selinux_domain;
+        static const size_t domain_len = sizeof(profile->rp_config.profile.selinux_domain);
+        if (unlikely(need_migrate_su_domain)) {
+            if (strncmp(domain, "u:r:su:s0", domain_len) == 0) {
+                strscpy_pad(domain, KSU_DEFAULT_SELINUX_DOMAIN, domain_len);
+                pr_info("migrated profile domain: %s\n", profile->key);
+            }
+        }
+        size_t len = strnlen(domain, domain_len);
+
+        if (len == 0 || len >= domain_len) {
+            pr_err("invalid selinux_domain in app_profile: %s\n", profile->key);
             return false;
         }
 #endif
@@ -309,6 +329,10 @@ bool ksu_uid_should_umount(uid_t uid)
 #endif
     if (unlikely(is_uid_manager(uid))) {
         // we should not umount on manager!
+        return false;
+    }
+    if (unlikely(uid == WEBVIEW_ZYGOTE_UID)) {
+        // we should not umount for webview zygote
         return false;
     }
 #ifdef CONFIG_KSU_DISABLE_POLICY
@@ -548,7 +572,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
     }
 }
 
-void ksu_allowlist_init(void)
+void __init ksu_allowlist_init(void)
 {
     int i;
 
@@ -563,7 +587,7 @@ void ksu_allowlist_init(void)
     init_default_profiles();
 }
 
-void ksu_allowlist_exit(void)
+void __exit ksu_allowlist_exit(void)
 {
     struct perm_data *np = NULL;
     struct perm_data *n = NULL;

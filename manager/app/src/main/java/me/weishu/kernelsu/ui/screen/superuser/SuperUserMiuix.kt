@@ -34,7 +34,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -59,7 +58,7 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeSource
-import m0.wEisHu.Kerne1su.R
+import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
@@ -87,6 +86,7 @@ import top.yukonga.miuix.kmp.extra.SuperListPopup
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.MoreCircle
+import top.yukonga.miuix.kmp.icon.extended.Notes
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -121,6 +121,18 @@ fun SuperUserPagerMiuix(
                 TopAppBar(
                     color = if (enableBlur) Color.Transparent else colorScheme.surface,
                     title = stringResource(R.string.superuser),
+                    navigationIcon = {
+                        IconButton(
+                            modifier = Modifier.padding(start = 16.dp),
+                            onClick = actions.onOpenSulog,
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.Notes,
+                                tint = colorScheme.onSurface,
+                                contentDescription = stringResource(R.string.settings_sulog)
+                            )
+                        }
+                    },
                     actions = {
                         val showTopPopup = remember { mutableStateOf(false) }
                         SuperListPopup(
@@ -486,10 +498,3 @@ private fun GroupItem(
         }
     }
 }
-
-@Immutable
-private data class StatusMeta(
-    val label: String,
-    val bg: Color,
-    val fg: Color
-)

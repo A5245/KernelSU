@@ -32,7 +32,8 @@ enum Commands {
     /// Trigger `service` event
     Services,
 
-    /// Run sulog reader daemon
+    /// Run sulog reader daemon. Not for user. Use `ksud debug sulogd` to launch daemon.
+    #[command(hide = true)]
     Sulogd,
 
     /// Trigger `boot-complete` event
@@ -48,6 +49,10 @@ enum Commands {
         #[arg(long)]
         post_magica: bool,
 
+        /// Specify kernel KMI version instead of auto-detection
+        #[arg(long)]
+        kmi: Option<String>,
+
         /// manager package name
         #[arg(long, default_value_t = String::from("me.weishu.kernelsu"))]
         package_name: String,
@@ -60,6 +65,9 @@ enum Commands {
     Install {
         #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
+
+        #[arg(long, default_value = None)]
+        libadbroot: Option<PathBuf>,
     },
 
     /// Unload KernelSU kernel module (LKM Only)
@@ -196,6 +204,9 @@ enum Debug {
         #[command(subcommand)]
         command: MarkCommand,
     },
+
+    /// Launch sulogd daemon manually
+    Sulogd,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -582,7 +593,10 @@ pub fn run() -> Result<()> {
                 }
             }
         }
-        Commands::Install { magiskboot } => utils::install(magiskboot),
+        Commands::Install {
+            magiskboot,
+            libadbroot,
+        } => utils::install(magiskboot, libadbroot),
         Commands::Unload => crate::unload::unload(),
         Commands::Uninstall {
             magiskboot,
@@ -596,6 +610,7 @@ pub fn run() -> Result<()> {
         Commands::LateLoad {
             magica,
             post_magica,
+            kmi,
             package_name,
         } => {
             if let Some(port) = magica {
@@ -604,7 +619,7 @@ pub fn run() -> Result<()> {
                     e
                 });
             }
-            let result = crate::late_load::run(&package_name);
+            let result = crate::late_load::run(&package_name, kmi);
             if post_magica {
                 info!("Restoring adb properties (post-magica cleanup)...");
                 if let Err(e) = crate::magica::disable_adb_root() {
@@ -617,9 +632,6 @@ pub fn run() -> Result<()> {
             if ksucalls::get_version() <= 0 {
                 info!("KernelSU not available, exiting services");
                 std::process::exit(0);
-            }
-            if let Err(err) = sulog::ensure_sulogd_running() {
-                error!("failed to ensure sulogd is running: {err:#}");
             }
             init_event::on_services();
             Ok(())
@@ -678,6 +690,7 @@ pub fn run() -> Result<()> {
                 MarkCommand::Unmark { pid } => debug::mark_unset(pid),
                 MarkCommand::Refresh => debug::mark_refresh(),
             },
+            Debug::Sulogd => sulog::ensure_sulogd_running(),
         },
 
         Commands::BootPatch(boot_patch) => crate::boot_patch::patch(boot_patch),

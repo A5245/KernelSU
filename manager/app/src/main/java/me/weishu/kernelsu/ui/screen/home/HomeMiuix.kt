@@ -51,6 +51,7 @@ import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.KernelVersion
 import m0.wEisHu.Kerne1su.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.miuix.WarningCard
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
@@ -129,7 +130,8 @@ fun HomePagerMiuix(
                     }
                     if (state.showVersionMismatchWarning) {
                         WarningCard(
-                            stringResource(id = R.string.home_version_mismatch,
+                            stringResource(
+                                id = R.string.home_version_mismatch,
                                 state.currentManagerVersionCode,
                                 state.ksuVersion ?: 0
                             )
@@ -140,8 +142,10 @@ fun HomePagerMiuix(
                     }
                     if (state.showRequireKernelWarning) {
                         WarningCard(
-                            stringResource(id = R.string.require_kernel_version,
-                                state.ksuVersion ?: 0, me.weishu.kernelsu.Natives.MINIMAL_SUPPORTED_KERNEL),
+                            stringResource(
+                                id = R.string.require_kernel_version,
+                                state.ksuVersion ?: 0, me.weishu.kernelsu.Natives.MINIMAL_SUPPORTED_KERNEL
+                            ),
                         )
                     }
                     if (state.showRootWarning) {
@@ -172,28 +176,29 @@ private fun UpdateCard(
     val newVersion = state.latestVersionInfo
     val title = stringResource(id = R.string.module_changelog)
     val updateText = stringResource(id = R.string.module_update)
+    val updateDialog = rememberConfirmDialog(onConfirm = { actions.onOpenUrl(newVersion.downloadUrl) })
 
     AnimatedVisibility(
         visible = state.hasUpdate,
         enter = fadeIn() + expandVertically(),
         exit = shrinkVertically() + fadeOut()
     ) {
-        val updateDialog = rememberConfirmDialog(onConfirm = { actions.onOpenUrl(newVersion.downloadUrl) })
         WarningCard(
             message = stringResource(id = R.string.new_version_available, newVersion.versionCode),
-            colorScheme.outline
-        ) {
-            if (newVersion.changelog.isEmpty()) {
-                actions.onOpenUrl(newVersion.downloadUrl)
-            } else {
-                updateDialog.showConfirm(
-                    title = title,
-                    content = newVersion.changelog,
-                    markdown = true,
-                    confirm = updateText
-                )
+            color = colorScheme.outline,
+            onClick = {
+                if (newVersion.changelog.isEmpty()) {
+                    actions.onOpenUrl(newVersion.downloadUrl)
+                } else {
+                    updateDialog.showConfirm(
+                        title = title,
+                        content = newVersion.changelog,
+                        markdown = true,
+                        confirm = updateText
+                    )
+                }
             }
-        }
+        )
     }
 }
 
@@ -435,38 +440,6 @@ private fun StatusCard(
 }
 
 @Composable
-private fun WarningCard(
-    message: String,
-    color: Color? = null,
-    onClick: (() -> Unit)? = null,
-) {
-    Card(
-        onClick = { onClick?.invoke() },
-        colors = CardDefaults.defaultColors(
-            color = color ?: when {
-                isDynamicColor -> colorScheme.errorContainer
-                isInDarkTheme() -> Color(0XFF310808)
-                else -> Color(0xFFF8E2E2)
-            }
-        ),
-        showIndication = onClick != null,
-        pressFeedbackType = PressFeedbackType.Tilt
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = message,
-                color = if (isDynamicColor) colorScheme.onErrorContainer else Color(0xFFF72727),
-                fontSize = 14.sp
-            )
-        }
-    }
-}
-
-@Composable
 private fun LearnMoreCard(
     onOpenUrl: (String) -> Unit,
 ) {
@@ -546,6 +519,17 @@ private fun InfoCard(systemInfo: SystemInfo) {
             InfoText(
                 title = stringResource(R.string.home_selinux_status),
                 content = selinuxDisplay,
+            )
+            val seccompDisplay = when (systemInfo.seccompStatus) {
+                -1 -> stringResource(R.string.seccomp_status_not_supported)
+                0 -> stringResource(R.string.seccomp_status_disabled)
+                1 -> stringResource(R.string.seccomp_status_strict)
+                2 -> stringResource(R.string.seccomp_status_filter)
+                else -> stringResource(R.string.seccomp_status_unknown)
+            }
+            InfoText(
+                title = stringResource(R.string.home_seccomp_status),
+                content = seccompDisplay,
                 bottomPadding = 0.dp
             )
         }
@@ -589,7 +573,8 @@ private val previewSystemInfo = SystemInfo(
     kernelVersion = "6.1.0-android14-0-g1234567",
     managerVersion = "1.0.0 (10000)",
     fingerprint = "google/raven/raven:14/AP1A.240305.019:user/release-keys",
-    selinuxStatus = "Enforcing"
+    selinuxStatus = "Enforcing",
+    seccompStatus = 2
 )
 
 private val previewUriHandler = object : UriHandler {

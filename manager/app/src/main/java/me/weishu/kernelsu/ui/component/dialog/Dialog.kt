@@ -166,9 +166,12 @@ private class ConfirmDialogHandleImpl(
     visible: MutableState<Boolean>,
     coroutineScope: CoroutineScope,
     callback: ConfirmCallback,
-    override var visuals: ConfirmDialogVisuals = ConfirmDialogVisualsImpl.Empty,
+    initialVisuals: ConfirmDialogVisuals = ConfirmDialogVisualsImpl.Empty,
     private val resultFlow: ReceiveChannel<ConfirmResult>
 ) : ConfirmDialogHandle, DialogHandleBase(visible, coroutineScope) {
+    private val visualsState = mutableStateOf(initialVisuals)
+    override val visuals: ConfirmDialogVisuals get() = visualsState.value
+
     private class ResultCollector(
         private val callback: ConfirmCallback
     ) : FlowCollector<ConfirmResult> {
@@ -229,7 +232,7 @@ private class ConfirmDialogHandleImpl(
     }
 
     fun updateVisuals(visuals: ConfirmDialogVisuals) {
-        this.visuals = visuals
+        visualsState.value = visuals
     }
 
     override fun show() {
@@ -325,22 +328,20 @@ private fun rememberConfirmDialog(visuals: ConfirmDialogVisuals, callback: Confi
         }
     )
 
-    if (visible.value) {
-        when (LocalUiMode.current) {
-            UiMode.Miuix -> ConfirmDialogMiuix(
-                handle.visuals,
-                confirm = { coroutineScope.launch { resultChannel.send(ConfirmResult.Confirmed) } },
-                dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } },
-                showDialog = visible
-            )
+    when (LocalUiMode.current) {
+        UiMode.Miuix -> ConfirmDialogMiuix(
+            handle.visuals,
+            confirm = { coroutineScope.launch { resultChannel.send(ConfirmResult.Confirmed) } },
+            dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } },
+            showDialog = visible
+        )
 
-            UiMode.Material -> ConfirmDialogMaterial(
-                handle.visuals,
-                confirm = { coroutineScope.launch { resultChannel.send(ConfirmResult.Confirmed) } },
-                dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } },
-                showDialog = visible
-            )
-        }
+        UiMode.Material -> ConfirmDialogMaterial(
+            handle.visuals,
+            confirm = { coroutineScope.launch { resultChannel.send(ConfirmResult.Confirmed) } },
+            dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } },
+            showDialog = visible
+        )
     }
 
     return handle

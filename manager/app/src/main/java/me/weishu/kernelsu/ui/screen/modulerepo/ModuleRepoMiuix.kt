@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -75,7 +76,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import m0.wEisHu.Kerne1su.R
-import me.weishu.kernelsu.ui.component.GithubMarkdown
+import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
@@ -120,7 +121,6 @@ import top.yukonga.miuix.kmp.icon.extended.MoreCircle
 import top.yukonga.miuix.kmp.icon.extended.TopDownloads
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -281,7 +281,7 @@ fun ModuleRepoScreenMiuix(
                                                 color = metaTint,
                                                 modifier = Modifier
                                                     .padding(start = 6.dp)
-                                                    .clip(miuixShape(6.dp))
+                                                    .clip(RoundedCornerShape(6.dp))
                                                     .background(metaBg)
                                                     .padding(horizontal = 6.dp, vertical = 2.dp),
                                                 fontWeight = FontWeight(750),
@@ -442,7 +442,7 @@ fun ModuleRepoScreenMiuix(
                                                         color = metaTint,
                                                         modifier = Modifier
                                                             .padding(start = 6.dp)
-                                                            .clip(miuixShape(6.dp))
+                                                            .clip(RoundedCornerShape(6.dp))
                                                             .background(metaBg)
                                                             .padding(horizontal = 6.dp, vertical = 2.dp),
                                                         fontWeight = FontWeight(750),

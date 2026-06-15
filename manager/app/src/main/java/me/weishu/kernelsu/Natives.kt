@@ -6,6 +6,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import m0.wEisHu.Kerne1su.R
 import me.weishu.kernelsu.Natives.Profile.RootProfileFlag
 
 /**

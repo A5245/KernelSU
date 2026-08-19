@@ -31,3 +31,5 @@ jobs:
       ddk_release: '20260313'
       expected_size2: ${{ inputs.expected_size2 || '' }}
       expected_hash2: ${{ inputs.expected_hash2 || '' }}
+      expected_size: ${{ vars.EXPECTED_SIZE }}
+      expected_hash: ${{ vars.EXPECTED_HASH }}

@@ -94,11 +94,12 @@ jobs:
           echo "Certificate hash: $HASH"
 
   build-lkm:
-    needs: generate-key
+    needs: [generate-key, build-manager]
     uses: ./.github/workflows/build-lkm.yml
     with:
-      expected_size: ${{ needs.generate-key.outputs.expected_size || '' }}
-      expected_hash: ${{ needs.generate-key.outputs.expected_hash || '' }}
+      package_name: ${{ needs.build-manager.outputs.package_name }}
+      expected_size: ${{ vars.EXPECTED_SIZE }}
+      expected_hash: ${{ vars.EXPECTED_HASH }}
     secrets: inherit
 
   build-ksuinit:
@@ -144,6 +145,8 @@ jobs:
     needs: [generate-key]
     if: always() && needs.generate-key.result == 'success'
     runs-on: ubuntu-latest
+    outputs:
+      package_name: ${{ steps.randomize.outputs.package_name }}
     defaults:
       run:
         working-directory: ./manager
@@ -153,6 +156,10 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      - name: Run randomizer
+        id: randomize
+        run: bash ./randomizer
 
       - name: Write key
         if: ${{ ( github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' )) || github.ref_type == 'tag' }}
